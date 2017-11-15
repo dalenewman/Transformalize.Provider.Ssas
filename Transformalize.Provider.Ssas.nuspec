@@ -23,6 +23,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="bin\Release\Transformalize.Provider.Ssas.dll" target="lib\net452\Transformalize.Provider.Ssas.dll" />
+    <file src="src\Transformalize.Provider.Ssas\bin\Release\Transformalize.Provider.Ssas.dll" target="lib\net452\Transformalize.Provider.Ssas.dll" />
   </files>
 </package>

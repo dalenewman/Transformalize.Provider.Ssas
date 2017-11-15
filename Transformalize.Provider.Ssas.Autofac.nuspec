@@ -20,6 +20,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="bin\Release\Transformalize.Provider.Ssas.Autofac.dll" target="lib\net452\Transformalize.Provider.Ssas.Autofac.dll" />
+    <file src="src\Transformalize.Provider.Ssas.Autofac\bin\Release\Transformalize.Provider.Ssas.Autofac.dll" target="lib\net452\Transformalize.Provider.Ssas.Autofac.dll" />
   </files>
 </package>
