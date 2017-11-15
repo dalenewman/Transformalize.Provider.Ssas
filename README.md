@@ -9,5 +9,5 @@ input.
 
 ### Sample Arrangements
 
-* [NorthWindToSqlServer.xml](https://github.com/dalenewman/Transformalize.Provider.Ssas/blob/master/arrangements/NorthWindToSqlServer.xml)
-* [NorthWindToSass.xml](https://github.com/dalenewman/Transformalize.Provider.Ssas/blob/master/arrangements/NorthWindToSsas.xml)
+* [NorthWindToSqlServer.xml](https://github.com/dalenewman/Transformalize.Provider.Ssas/blob/master/arrangements/NorthwindToSqlServer.xml)
+* [NorthWindToSass.xml](https://github.com/dalenewman/Transformalize.Provider.Ssas/blob/master/arrangements/NorthwindToSsas.xml)
