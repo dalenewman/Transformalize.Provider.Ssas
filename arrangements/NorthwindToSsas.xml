@@ -1,0 +1,21 @@
+<cfg name="NorthWind">
+    <connections>
+        <add name="input" provider="sqlserver" server="localhost" database="TflNorthWind" />
+        <add name="output" provider="ssas" server="localhost" database="NorthWind" />
+    </connections>
+    <entities>
+        <add name="NorthWindFlat" version="TflBatchId" alias="Properties" >
+            <fields>
+                <add name="TflKey" type="int" primarykey="true" alias="Key" />
+                <add name="TflBatchId" type="int" alias="Version" />
+                <add name="Revenue" type="decimal" scale="2" measure="true" format="$###,###,###.00" />
+                <add name="Freight" type="decimal" precision="19" scale="4" measure="true" format="$###,###,###.00" />
+                <add name="OrderYear" type="int" dimension="true" />
+                <add name="OrderMonthSortable" />
+                <add name="Country" length="15" />
+                <add name="EmployeeID" type="int" measure="true" aggregate-function="distinctcount" label="Employees" />
+                <add name="CategoryName" length="15" />
+            </fields>
+        </add>
+    </entities>
+</cfg>
