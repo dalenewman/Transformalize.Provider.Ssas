@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Transformalize.Provider.Ssas</id>
-    <version>0.2.9-beta</version>
+    <version>0.5.0-beta</version>
     <title>Transformalize Provider Ssas</title>
     <authors>Dale Newman</authors>
     <owners>Dale Newman</owners>
@@ -11,18 +11,17 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>SQL Server Analysis Services (SSAS) Provider for Transformalize</description>
     <releaseNotes>removed from main solution</releaseNotes>
-    <copyright>Copyright 2017</copyright>
+    <copyright>Copyright 2017-2019</copyright>
     <tags>etl</tags>
     <dependencies>
-      <group targetFramework="net452">
-        <dependency id="Transformalize.Provider.Ado" version="0.2.9-beta" />
-        <dependency id="Humanizer.Core" version="2.2.0" />
+      <group targetFramework="net462">
+        <dependency id="Transformalize.Provider.Ado" version="0.5.0-beta" />
         <dependency id="Microsoft.AnalysisServices" version="11.0.2100.60" />
         <dependency id="Microsoft.AnalysisServices.AdomdClient" version="12.0.2000.8" />
       </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="src\Transformalize.Provider.Ssas\bin\Release\Transformalize.Provider.Ssas.dll" target="lib\net452\Transformalize.Provider.Ssas.dll" />
+    <file src="..\src\Transformalize.Provider.Ssas\bin\Release\Transformalize.Provider.Ssas.dll" target="lib\net462\Transformalize.Provider.Ssas.dll" />
   </files>
 </package>

@@ -25,56 +25,59 @@ using Transformalize.Nulls;
 using Transformalize.Providers.Ado;
 
 namespace Transformalize.Providers.Ssas.Autofac {
-    public class SsasModule : Module {
-        protected override void Load(ContainerBuilder builder) {
-            if (!builder.Properties.ContainsKey("Process")) {
-                return;
+   public class SsasModule : Module {
+      protected override void Load(ContainerBuilder builder) {
+         if (!builder.Properties.ContainsKey("Process")) {
+            return;
+         }
+
+         var process = (Process)builder.Properties["Process"];
+
+         // connections
+         foreach (var connection in process.Connections.Where(c => c.Provider == "ssas")) {
+            if (connection.Cube == string.Empty) {
+               connection.Cube = process.Name;
             }
+            builder.Register<ISchemaReader>(ctx => new NullSchemaReader()).Named<ISchemaReader>(connection.Key);
+         }
 
-            var process = (Process)builder.Properties["Process"];
+         // Entity input
+         foreach (var entity in process.Entities.Where(e => process.Connections.First(c => c.Name == e.Connection).Provider == "ssas")) {
 
-            // connections
-            foreach (var connection in process.Connections.Where(c => c.Provider == "ssas")) {
-                builder.Register<ISchemaReader>(ctx => new NullSchemaReader()).Named<ISchemaReader>(connection.Key);
+            // input version detector
+            builder.Register<IInputProvider>(ctx => new SsasInputProvider(ctx.ResolveNamed<InputContext>(entity.Key))).Named<IInputProvider>(entity.Key);
+
+            // input reader
+            builder.Register<IRead>(ctx => new SsasReader(ctx.ResolveNamed<InputContext>(entity.Key))).Named<IRead>(entity.Key);
+         }
+
+         if (process.Output().Provider == "ssas") {
+            // PROCESS OUTPUT CONTROLLER
+            builder.Register<IOutputController>(ctx => new NullOutputController()).As<IOutputController>();
+
+            foreach (var entity in process.Entities) {
+               builder.Register<IOutputController>(ctx => {
+                  var input = ctx.ResolveNamed<InputContext>(entity.Key);
+                  var output = ctx.ResolveNamed<OutputContext>(entity.Key);
+                  var factory = ctx.ResolveNamed<IConnectionFactory>(input.Connection.Key);
+                  var initializer = process.Mode == "init" ? (IAction)new SsasInitializer(input, output, factory) : new NullInitializer();
+                  return new SsasOutputController(
+                      output,
+                      initializer,
+                      ctx.ResolveNamed<IInputProvider>(entity.Key),
+                      new SsasOutputProvider(input, output)
+                  );
+               }
+               ).Named<IOutputController>(entity.Key);
+
+               // ENTITY WRITER
+               builder.Register<IWrite>(ctx => new SsasWriter(
+                   ctx.ResolveNamed<InputContext>(entity.Key),
+                   ctx.ResolveNamed<OutputContext>(entity.Key)
+               )).Named<IWrite>(entity.Key);
             }
+         }
 
-            // Entity input
-            foreach (var entity in process.Entities.Where(e => process.Connections.First(c => c.Name == e.Connection).Provider == "ssas")) {
-
-                // input version detector
-                builder.RegisterType<NullInputProvider>().Named<IInputProvider>(entity.Key);
-
-                // input reader
-                builder.Register<IRead>(ctx => new NullReader(ctx.ResolveNamed<InputContext>(entity.Key), false)).Named<IRead>(entity.Key);
-            }
-
-            if (process.Output().Provider == "ssas") {
-                // PROCESS OUTPUT CONTROLLER
-                builder.Register<IOutputController>(ctx => new NullOutputController()).As<IOutputController>();
-
-                foreach (var entity in process.Entities) {
-                    builder.Register<IOutputController>(ctx => {
-                        var input = ctx.ResolveNamed<InputContext>(entity.Key);
-                        var output = ctx.ResolveNamed<OutputContext>(entity.Key);
-                        var factory = ctx.ResolveNamed<IConnectionFactory>(input.Connection.Key);
-                        var initializer = process.Mode == "init" ? (IAction)new SsasInitializer(input, output, factory) : new NullInitializer();
-                        return new SsasOutputController(
-                            output,
-                            initializer,
-                            ctx.ResolveNamed<IInputProvider>(entity.Key),
-                            new SsasOutputProvider(input, output)
-                        );
-                    }
-                    ).Named<IOutputController>(entity.Key);
-
-                    // ENTITY WRITER
-                    builder.Register<IWrite>(ctx => new SsasWriter(
-                        ctx.ResolveNamed<InputContext>(entity.Key), 
-                        ctx.ResolveNamed<OutputContext>(entity.Key)
-                    )).Named<IWrite>(entity.Key);
-                }
-            }
-
-        }
-    }
+      }
+   }
 }

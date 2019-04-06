@@ -22,69 +22,70 @@ using Transformalize.Context;
 using Transformalize.Contracts;
 
 namespace Transformalize.Providers.Ssas {
-    public class SsasWriter : IWrite {
 
-        readonly InputContext _input;
-        readonly OutputContext _output;
-        public SsasWriter(InputContext input, OutputContext output) {
-            _input = input;
-            _output = output;
-        }
+   public class SsasWriter : IWrite {
 
-        public void Write(IEnumerable<IRow> rows) {
+      readonly InputContext _input;
+      readonly OutputContext _output;
+      public SsasWriter(InputContext input, OutputContext output) {
+         _input = input;
+         _output = output;
+      }
 
-            if (!_output.Entity.NeedsUpdate())
-                return;
+      public void Write(IEnumerable<IRow> rows) {
 
-            var ids = new SsasIdentifiers(_input, _output);
+         if (!_output.Entity.NeedsUpdate())
+            return;
 
-            using (var server = new Server()) {
-                server.Connect($"Data Source={_output.Connection.Server};Catalog=;");
+         var ids = new SsasIdentifiers(_input, _output);
 
-                if (server.Databases.Contains(ids.DatabaseId)) {
-                    var database = server.Databases.Find(ids.DatabaseId);
-                    if (_output.Process.Mode == "init") {
-                        _output.Info($"Processing OLAP database {ids.DatabaseId}");
-                        Ssas.Process(database, ProcessType.ProcessFull, _output);
-                    } else {
-                        if (database.Dimensions.Contains(_output.Entity.Alias)) {
-                            _output.Info($"Updating dimension {_output.Entity.Alias}");
-                            var dimension = database.Dimensions.Find(_output.Entity.Alias);
-                            Ssas.Process(dimension, ProcessType.ProcessUpdate, _output);
-                        } else {
-                            _output.Error($"{_output.Entity.Alias} dimension does not exist!");
-                        }
-                        if (database.Cubes.Contains(ids.CubeId)) {
-                            var cube = database.Cubes.Find(ids.CubeId);
-                            ProcessPartition(cube, ids.NormalMeasureGroupId);
-                            ProcessPartition(cube, ids.DistinctMeasureGroupId);
-                        } else {
-                            _output.Error($"{ids.CubeId} cube does not exist!");
-                        }
-                    }
-                } else {
-                    _output.Error($"{ids.DatabaseId} OLAP database does not exist!");
-                }
-                server.Disconnect();
-            }
+         using (var server = new Server()) {
+            server.Connect($"Data Source={_output.Connection.Server};Catalog=;");
 
-        }
-
-        public void ProcessPartition(Cube cube, string partitionId) {
-            if (cube.MeasureGroups.Contains(partitionId)) {
-                var measureGroup = cube.MeasureGroups.Find(partitionId);
-                if (measureGroup.Partitions.Contains(partitionId)) {
-                    var partition = measureGroup.Partitions.Find(partitionId);
-                    _output.Info($"Updating partition {partitionId}");
-                    if (Ssas.Process(partition, ProcessType.ProcessData, _output)) {
-                        Ssas.Process(partition, ProcessType.ProcessIndexes, _output);
-                    }
-                } else {
-                    _output.Error($"{partitionId} partition does not exist!");
-                }
+            if (server.Databases.Contains(ids.DatabaseId)) {
+               var database = server.Databases.Find(ids.DatabaseId);
+               if (_output.Process.Mode == "init") {
+                  _output.Info($"Processing OLAP database {ids.DatabaseId}");
+                  Ssas.Process(database, ProcessType.ProcessFull, _output);
+               } else {
+                  if (database.Dimensions.Contains(_output.Entity.Alias)) {
+                     _output.Info($"Updating dimension {_output.Entity.Alias}");
+                     var dimension = database.Dimensions.Find(_output.Entity.Alias);
+                     Ssas.Process(dimension, ProcessType.ProcessUpdate, _output);
+                  } else {
+                     _output.Error($"{_output.Entity.Alias} dimension does not exist!");
+                  }
+                  if (database.Cubes.Contains(ids.CubeId)) {
+                     var cube = database.Cubes.Find(ids.CubeId);
+                     ProcessPartition(cube, ids.NormalMeasureGroupId);
+                     ProcessPartition(cube, ids.DistinctMeasureGroupId);
+                  } else {
+                     _output.Error($"{ids.CubeId} cube does not exist!");
+                  }
+               }
             } else {
-                _output.Error($"{partitionId} measure group does not exist!");
+               _output.Error($"{ids.DatabaseId} OLAP database does not exist!");
             }
-        }
-    }
+            server.Disconnect();
+         }
+
+      }
+
+      public void ProcessPartition(Cube cube, string partitionId) {
+         if (cube.MeasureGroups.Contains(partitionId)) {
+            var measureGroup = cube.MeasureGroups.Find(partitionId);
+            if (measureGroup.Partitions.Contains(partitionId)) {
+               var partition = measureGroup.Partitions.Find(partitionId);
+               _output.Info($"Updating partition {partitionId}");
+               if (Ssas.Process(partition, ProcessType.ProcessData, _output)) {
+                  Ssas.Process(partition, ProcessType.ProcessIndexes, _output);
+               }
+            } else {
+               _output.Error($"{partitionId} partition does not exist!");
+            }
+         } else {
+            _output.Error($"{partitionId} measure group does not exist!");
+         }
+      }
+   }
 }

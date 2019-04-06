@@ -1,8 +1,14 @@
-<cfg name="NorthWind" flatten="true">
+<cfg name="NorthWind" flatten="true" mode="@[Mode]">
+  
+  <parameters>
+    <add name="Mode" value="default" />
+  </parameters>
+  
   <connections>
     <add name="input" provider="sqlserver" database="NorthWind"/>
     <add name="output" provider="sqlserver" database="TflNorthWind" />
   </connections>
+  
   <entities>
     <add name="Order Details" version="RowVersion">
       <fields>

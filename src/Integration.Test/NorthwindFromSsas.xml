@@ -1,0 +1,37 @@
+<cfg name="NorthWind" mode="@[Mode]">
+   <parameters>
+      <add name="Mode" value="default" />
+   </parameters>
+   <connections>
+      <add name="input" provider="ssas" server="localhost" database="NorthWind" />
+      <add name="output" provider="internal"  />
+   </connections>
+   <entities>
+      <add name="Anything" 
+           query="
+SELECT 
+  { 
+    [Measures].[Revenue], 
+    [Measures].[Freight] 
+  } ON COLUMNS, 
+  { 
+    ( 
+      [Properties].[Country].[Country] * 
+      [Properties].[Order Year].[Order Year] * 
+      [Properties].[Order Month Sortable].[Order Month Sortable] * 
+      [Properties].[Category Name].[Category Name] 
+    ) 
+  } ON ROWS 
+FROM [NorthWind]         
+           " >
+         <fields>
+            <add name="[Measures].[Revenue]" type="decimal" scale="2" measure="true" />
+            <add name="[Measures].[Freight]" type="decimal" precision="19" scale="4" measure="true" />
+            <add name="[Properties].[Country].[Country].[MEMBER_CAPTION]" length="15" />
+            <add name="[Properties].[Order Year].[Order Year].[MEMBER_CAPTION]" type="int" />
+            <add name="[Properties].[Order Month Sortable].[Order Month Sortable].[MEMBER_CAPTION]" />
+            <add name="[Properties].[Category Name].[Category Name].[MEMBER_CAPTION]" length="15" />
+         </fields>
+      </add>
+   </entities>
+</cfg>
