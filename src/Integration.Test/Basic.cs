@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Linq;
 using Autofac;
-using Dapper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Transformalize.Configuration;
 using Transformalize.Containers.Autofac;
 using Transformalize.Contracts;
-using Transformalize.Providers.Ado;
 using Transformalize.Providers.Ado.Autofac;
 using Transformalize.Providers.Console;
 using Transformalize.Providers.SqlServer.Autofac;
@@ -21,9 +19,9 @@ namespace Integration.Test {
       [TestInitialize]
       public void TransformalizeNorthWind() {
          var logger = new ConsoleLogger(LogLevel.Debug);
-         using (var outer = new ConfigurationContainer(new JintModule()).CreateScope("NorthwindToSqlServer.xml?Mode=init", logger)) {
+         using (var outer = new ConfigurationContainer(new JintTransformModule()).CreateScope("NorthwindToSqlServer.xml?Mode=init", logger)) {
             var process = outer.Resolve<Process>();
-            using (var inner = new Container(new JintModule(), new AdoProviderModule(), new SqlServerModule(process)).CreateScope(process, logger)) {
+            using (var inner = new Container(new JintTransformModule(), new AdoProviderModule(), new SqlServerModule(process)).CreateScope(process, logger)) {
                var controller = inner.Resolve<IProcessController>();
                controller.Execute();
             }
